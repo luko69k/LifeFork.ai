@@ -6,15 +6,32 @@ export default function Home() {
   const [optionB, setOptionB] = useState('')
   const [priorities, setPriorities] = useState<string[]>([])
   const [result, setResult] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
-    const res = await fetch('/api/simulate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ situation, optionA, optionB, priorities }),
-    })
-    const data = await res.json()
-    setResult(data.result)
+    setLoading(true)
+    setResult('')
+    try {
+      const res = await fetch('/api/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ situation, optionA, optionB, priorities }),
+      })
+
+      if (!res.ok) {
+        const errorText = await res.text()
+        setResult(`Chyba: ${res.status} – ${errorText}`)
+        setLoading(false)
+        return
+      }
+
+      const data = await res.json()
+      setResult(data.result || "Bez výstupu")
+    } catch (error) {
+      setResult("Nastala chyba počas spracovania.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleCheckbox = (value: string) => {
@@ -36,7 +53,7 @@ export default function Home() {
         <label><input type="checkbox" onChange={() => handleCheckbox('Sebarozvoj')} /> Sebarozvoj</label>
       </div>
       <button onClick={handleSubmit}>Simuluj</button>
-      <pre>{result}</pre>
+      {loading ? <p>⏳ Načítavam simuláciu...</p> : <pre>{result}</pre>}
     </div>
   )
 }
