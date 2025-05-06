@@ -21,7 +21,6 @@ export default function Home() {
       if (!res.ok) {
         const errorText = await res.text()
         setResult(`Chyba: ${res.status} – ${errorText}`)
-        setLoading(false)
         return
       }
 
